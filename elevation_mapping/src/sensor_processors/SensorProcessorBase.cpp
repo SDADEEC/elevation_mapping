@@ -152,6 +152,13 @@ bool SensorProcessorBase::transformPointCloud(PointCloudType::ConstPtr pointClou
 
 void SensorProcessorBase::removePointsOutsideLimits(PointCloudType::ConstPtr reference, std::vector<PointCloudType::Ptr>& pointClouds) {
   const Parameters parameters{parameters_.getData()};
+
+  // !Debug: JW
+  // std::cout << "ignore_threshold up: " << parameters.ignorePointsUpperThreshold_
+  //           << ", ignore_threshold low: " << parameters.ignorePointsLowerThreshold_ << std::endl;
+  // std::cout << "z threshold up: " << translationMapToBaseInMapFrame_.z() + parameters.ignorePointsUpperThreshold_
+  //           << ", z threshold low: " << translationMapToBaseInMapFrame_.z() + parameters.ignorePointsLowerThreshold_ << std::endl;
+
   if (!std::isfinite(parameters.ignorePointsLowerThreshold_) && !std::isfinite(parameters.ignorePointsUpperThreshold_)) {
     return;
   }

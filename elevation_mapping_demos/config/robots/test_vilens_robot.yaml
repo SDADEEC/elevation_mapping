@@ -1,0 +1,50 @@
+input_sources: # Supported types: pointcloud
+  cloud: # A name to identify the input source (You can change it to what you like) ground_truth_
+    type: pointcloud
+    # In world frame
+    topic: /rgbd2PC/p2local
+    queue_size: 1
+    # Whether to publish the elevation map after a callback from this source.
+    publish_on_update: true 
+    sensor_processor:
+      type: perfect
+
+# Set to fixed world frame      
+map_frame_id: "odom_vilens"
+# Set to fixed world frame
+robot_base_frame_id: "odom_vilens"
+# Leaving this empty skipps pose covariance updates.
+robot_pose_with_covariance_topic: "/vilens/pose_propagated"
+robot_pose_cache_size: 200
+# Set to moving sensor frame
+track_point_frame_id: "base_vilens"
+track_point_x: 0.0
+track_point_y: 0.0
+track_point_z: 0.0
+min_update_rate: 2.0
+time_tolerance: 0.5
+
+# Igonre points above or below certain height
+sensor_processor/ignore_points_above: 0.8
+# sensor_processor/ignore_points_below: 0.01
+
+# Map.
+length_in_x: 5.0
+length_in_y: 5.0
+position_x: 0.0
+position_y: 0.0
+resolution: 0.02
+min_variance: 0.0001
+max_variance: 0.05
+mahalanobis_distance_threshold: 2.5
+multi_height_noise: 0.01
+surface_normal_positive_axis: z
+fused_map_publishing_rate: 2.0
+enable_visibility_cleanup: true
+# setting this to false to fix issue of holes in the grid map
+#enable_visibility_cleanup: false
+visibility_cleanup_rate: 1.0
+scanning_duration: 0.2
+
+
+thread_number: 8

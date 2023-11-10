@@ -1,0 +1,22 @@
+<launch>
+
+  <!-- Elevation mapping node -->
+  <node pkg="elevation_mapping" type="elevation_mapping" name="elevation_mapping" output="screen">
+    <rosparam command="load" file="$(find elevation_mapping_demos)/config/robots/test_vilens_robot.yaml" />
+    <!--<rosparam command="load" file="$(find elevation_mapping_demos)/config/elevation_maps/remove_object.yaml" />-->
+    <rosparam command="load" file="$(find elevation_mapping)/config/sensor_processors/realsense_d435.yaml" />
+    <rosparam command="load" file="$(find elevation_mapping_demos)/config/postprocessing/postprocessor_pipeline.yaml" />
+  </node>
+
+  <!-- Launch visualizations for the resulting elevation map -->
+  <include file="$(find elevation_mapping_demos)/launch/visualization.launch" />
+
+
+  <!-- Setup a transform between the world and the robot -->
+  <node pkg="tf" type="static_transform_publisher" name="world_to_robot" args="-0.030 0.007 0.016 0.500 -0.500 0.500 0.500 /base_vilens /camera_link 100"/>
+
+
+  <!-- Launch RViz with the demo configuration -->
+  <!--<node name="rviz" pkg="rviz" type="rviz" args="-d $(find elevation_mapping_demos)/rviz/elevation_map_visualization_pointcloud.rviz" />-->
+
+</launch>
