@@ -1,5 +1,8 @@
 # Robot-Centric Elevation Mapping
 
+## JW Modification
+- More info about parameters to tune
+
 ## Overview
 
 This is a [ROS] package developed for elevation mapping with a mobile robot. The software is designed for (local) navigation tasks with robots which are equipped with a pose estimation (e.g. IMU & odometry) and a distance sensor (e.g. structured light (Kinect, RealSense), laser range sensor, stereo camera). The provided elevation map is limited around the robot and reflects the pose uncertainty that is aggregated through the motion of the robot (robot-centric mapping). This method is developed to explicitly handle drift of the robot pose estimation.
@@ -256,7 +259,8 @@ This is the main Robot-Centric Elevation Mapping node. It uses the distance sens
 * **`DEPRECATED point_cloud_topic`** (string, default: "/points")
 
     The name of the distance measurements topic. Use input_sources instead. 
-    
+
+##### Input sources related parameters
 * **`input_sources`** (list of input sources, default: none)
 
     Here you specify your inputs to elevation mapping, currently "pointcloud" inputs are supported. 
@@ -279,6 +283,120 @@ This is the main Robot-Centric Elevation Mapping node. It uses the distance sens
     ```yaml
     input_sources: []
     ```
+
+- **`sensor_processor`** 
+
+	sensor processor parameter provides a set of available operations on the input point clouds based on the sensor model that generate them. 
+	**This part should be directly put as a sub-field under the name of the input source**
+	e.g.,  A perfect sensor_processor
+```YAML
+input_sources:
+        front: # A name to identify the input source
+          type: pointcloud # Supported types: pointcloud
+          topic: /lidar_front/depth/points
+          queue_size: 1
+          publish_on_update: true # Wheter to publish the elevation map after a callback from this source. 
+          sensor_processor:
+		      type: perfect
+```
+
+
+Elevation map currently provides 4 specific types of sensor process
+- **structured_light**
+	Related parameter (e.g.,):
+	```YAML
+		  sensor_processor:
+			  type: structured_light
+		  sensor_processor/cutoff_min_depth: 0.2  # min valid depth of input cloud
+		  sensor_processor/cutoff_max_depth: 3  # max valid depth of input cloud
+		  sensor_processor/normal_factor_a: 0.000611
+		  sensor_processor/normal_factor_b: 0.003587
+		  sensor_processor/normal_factor_c: 0.3515
+		  sensor_processor/normal_factor_d: 0
+		  sensor_processor/normal_factor_e: 1
+		  sensor_processor/lateral_factor: 0.01576
+	```
+
+	The above parameters specify the structured-light type sensor model:
+	$$\sigma_{normal\ direction} = A + B * (distance - C)^2$$
+	$$\sigma_{lateral\ direction} = LateralFactor * distance$$
+	where
+	- $\sigma_{normal\ direction}$ is standard deviation in normal direction
+	- $\sigma_{lateral\ direction}$ is standard deviation in lateral direction
+	- $A, B, C, D, E, LateralFactor$ are factors above
+	- $distance$ is the measured distance from depth image
+	See: Nguyen, C. V., Izadi, S., & Lovell, D., Modeling Kinect Sensor Noise for Improved 3D Reconstruction and Tracking, 2012. for details
+
+- **stereo**
+	Related parameter (e.g.,):
+	```YAML
+		  sensor_processor:
+			  type: stereo
+		  sensor_processor/cutoff_min_depth: 0.2  # min valid depth of input cloud
+		  sensor_processor/cutoff_max_depth: 3  # max valid depth of input cloud
+		  sensor_processor/p_1: 0.000611
+		  sensor_processor/p_2: 0.003587
+		  sensor_processor/p_3: 0.3515
+		  sensor_processor/p_4: 0
+		  sensor_processor/p_5: 1
+		  sensor_processor/lateral_factor: 0.01576
+		  sensor_processor/depth_to_disparity_factor: 47.3
+	```
+
+	See "Localization and Path Planning of a Climbing Robot for Corrosion Monitoring", Hannes Keller, Semester Project, ETH Zurich, 2014. for details
+
+- **laser**
+	Related parameter (e.g.,):
+	```YAML
+		  sensor_processor:
+			  type: laser
+		  sensor_processor/min_radius: 0.018   
+		  sensor_processor/beam_angle: 0.0006 
+		  sensor_processor/beam_constant: 0.0015 
+	```
+
+	The above parameters specify laser sensor model:
+	$$ \sigma_{beam\ direction} = min\_radius$$
+	$$\sigma_{beam\ radius} = beam\_constant + beam\_angle* distance$$
+where
+	-  $\sigma_{beam\ direction}$ is the standard deviation in beam direction
+	- $\sigma_{beam\ radius}$ is the standard deviation of beam radius
+	- $min\_radius, beam\_constant, beam\_angle$ are factors above
+	- $distance$ is the measured distance from laser
+	See Pomerleau, F.; Breitenmoser, A; Ming Liu; Colas, F.; Siegwart, R., "Noise characterization of depth sensors for surface inspections," International Conference on Applied Robotics for the Power Industry (CARPI), 2012. for details
+
+- **perfect**
+	Related parameter (e.g.,):
+	```YAML
+		  sensor_processor:
+			  type: perfect
+	```
+
+	In this type, no changes to point cloud
+
+There are several other parameters in the **`input_source`** subfield to handle the input point cloud
+
+* **`sensor_processor/ignore_points_above`** (double, default: inf)
+    A hard threshold on the height of points introduced by the depth sensor. Points with a height over this threshold will not be considered valid during the data collection step.
+    Note: for a point in the **map** frame, the `upper_threshold = base_position_in_map(z-value) + ignore_points_above`. All point's `z-value` larger than this `upper_threshold` would be ignored
+
+* **`sensor_processor/ignore_points_below`** (double, default: -inf)
+    A hard threshold on the height of points introduced by the depth sensor. Points with a height below this threshold will not be considered valid during the data collection step.
+    Note: for a point in the **map** frame, the `lower_threshold = base_position_in_map(z-value) + ignore_points_below`. All point's `z-value` smaller than this `lower_threshold` would be ignored
+
+You can also customize the valid points height range **in map frame** using the above two parameters
+
+
+You can use below two parameters to voxelize the input point clouds
+- **`sensor_processor/apply_voxelgrid_filter`** (bool, default: false)
+	Whether or not to apply voxel filter on the input point clouds
+
+- **`sensor_processor/voxelgrid_filter_size`** (double, default: 0.0)
+	voxel grid resolution
+
+
+##### Elevation map related parameters
+
 * **`robot_pose_topic`** (string, default: "/robot_state/pose")
 
     The name of the robot pose and covariance topic.
@@ -335,11 +453,9 @@ This is the main Robot-Centric Elevation Mapping node. It uses the distance sens
 
     Each cell in the elevation map has an uncertainty for its height value. Depending on the Mahalonobis distance of the existing height distribution and the new measurements, the incoming data is fused with the existing estimate, overwritten, or ignored. This parameter determines the threshold on the Mahalanobis distance which determines how the incoming measurements are processed.
 
-* **`sensor_processor/ignore_points_above`** (double, default: inf)
-    A hard threshold on the height of points introduced by the depth sensor. Points with a height over this threshold will not be considered valid during the data collection step.
 
-* **`sensor_processor/ignore_points_below`** (double, default: -inf)
-    A hard threshold on the height of points introduced by the depth sensor. Points with a height below this threshold will not be considered valid during the data collection step.
+
+
 
 * **`multi_height_noise`** (double, default: 9.0e-7)
 
