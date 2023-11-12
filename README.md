@@ -297,7 +297,7 @@ input_sources:
           queue_size: 1
           publish_on_update: true # Wheter to publish the elevation map after a callback from this source. 
           sensor_processor:
-		      type: perfect
+            type: perfect
 ```
 
 
@@ -356,8 +356,8 @@ Elevation map currently provides 4 specific types of sensor process
 	```
 
 	The above parameters specify laser sensor model:
-	$$ \sigma_{beam\ direction} = min\_radius$$
-	$$\sigma_{beam\ radius} = beam\_constant + beam\_angle* distance$$
+	$$\sigma_{beam\ direction} = min\ radius$$
+	$$\sigma_{beam\ radius} = beam\ constant + beam\ angle* distance$$
 where
 	-  $\sigma_{beam\ direction}$ is the standard deviation in beam direction
 	- $\sigma_{beam\ radius}$ is the standard deviation of beam radius
@@ -374,8 +374,8 @@ where
 
 	In this type, no changes to point cloud
 
-- **other related parameters for input source**
-There are several other parameters in the **`input_source`** subfield to handle the input point cloud
+***other related parameters for input source***
+There are several other parameters in the **`input_source`** subfield to handle the input point cloud:
 
 * **`sensor_processor/ignore_points_above`** (double, default: inf)
     A hard threshold on the height of points introduced by the depth sensor. Points with a height over this threshold will not be considered valid during the data collection step.
@@ -527,7 +527,7 @@ You can use below two parameters to voxelize the input point clouds
     estimate and measurement will be formed to initialize the new gaussian height distribution.
 
 
-##### Postprocessor
+##### Postprocessor related parameters
 
 * **`postprocessor_pipeline_name`** (string, default: postprocessor_pipeline)
 
