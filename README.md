@@ -374,6 +374,7 @@ where
 
 	In this type, no changes to point cloud
 
+- **other related parameters for input source**
 There are several other parameters in the **`input_source`** subfield to handle the input point cloud
 
 * **`sensor_processor/ignore_points_above`** (double, default: inf)
@@ -399,7 +400,7 @@ You can use below two parameters to voxelize the input point clouds
 
 * **`robot_pose_topic`** (string, default: "/robot_state/pose")
 
-    The name of the robot pose and covariance topic.
+    The name of the robot pose and covariance topic. Specify the pose from **`base_frame_id`** to **`map_frame_id`** (message type: `geometry_msgs::PoseWithCovarianceStamped`)
 
 * **`base_frame_id`** (string, default: "/robot")
 
@@ -411,7 +412,7 @@ You can use below two parameters to voxelize the input point clouds
 
 * **`track_point_frame_id`** (string, default: "/robot")
 
-    The elevation map is moved along with the robot following a *track point*. This is the id of the tf frame in which the track point is defined.
+    The elevation map is moved along with the robot following a *track point*. This is the id of the tf frame in which the track point is defined. (You can set it the same as **`base_frame_id`**)
 
 * **`track_point_x`**, **`track_point_y`**, **`track_point_z`** (double, default: 0.0, 0.0, 0.0)
 
@@ -432,6 +433,13 @@ You can use below two parameters to voxelize the input point clouds
 * **`relocate_rate`** (double, default: 3.0)
 
     The rate (in Hz) at which the elevation map is checked for relocation following the tracking point.
+
+- **`time_tolerance`** (double, default: 0.0)
+
+	Time tolerance for updating the map with data before the last update.
+	This is useful when having multiple sensors adding data to the map.
+
+
 
 * **`length_in_x`**, **`length_in_y`** (double, default: 1.5, min: 0.0)
 
@@ -480,22 +488,6 @@ You can use below two parameters to voxelize the input point clouds
 * **`num_callback_threads`** (int, default: 1, min: 1)
     The number of threads to use for processing callbacks. More threads results in higher throughput, at cost of more resource usage. 
 
-* **`postprocessor_pipeline_name`** (string, default: postprocessor_pipeline)
-
-    The name of the pipeline to execute for postprocessing. It expects a pipeline configuration to be loaded in the private namespace of the node under this name. 
-    E.g.:
-    ```
-      <node pkg="elevation_mapping" type="elevation_mapping" name="elevation_mapping" output="screen">
-          ...
-          <rosparam command="load" file="$(find elevation_mapping_demos)/config/postprocessor_pipeline.yaml" />
-      </node>
-    ```
-    A pipeline is a grid_map_filter chain, see grid_map_demos/filters_demo.yaml and [ros / filters](http://wiki.ros.org/filters) for more information. 
-
-* **`postprocessor_num_threads`** (int, default: 1, min: 1)
-
-    The number of threads to use for asynchronous postprocessing. More threads results in higher throughput, at cost of more resource usage. 
-
 * **`scanning_duration`** (double, default: 1.0)
 
     The sensor's scanning duration (in s) which is used for the visibility cleanup. Set this roughly to the duration it takes between two consecutive full scans (e.g. 0.033 for a ToF camera with 30 Hz, or 3 s for a rotating laser scanner). Depending on how dense or sparse your scans are, increase or reduce the scanning duration. Smaller values lead to faster dynamic object removal and bigger values help to reduce faulty map cleanups.
@@ -533,6 +525,28 @@ You can use below two parameters to voxelize the input point clouds
     mode.
   - In between: A higher value puts more bias on the existing, prior estimate. A convex combination of both height and variance between
     estimate and measurement will be formed to initialize the new gaussian height distribution.
+
+
+##### Postprocessor
+
+* **`postprocessor_pipeline_name`** (string, default: postprocessor_pipeline)
+
+    The name of the pipeline to execute for postprocessing. It expects a pipeline configuration to be loaded in the private namespace of the node under this name. 
+    E.g.:
+    ```
+      <node pkg="elevation_mapping" type="elevation_mapping" name="elevation_mapping" output="screen">
+          ...
+          <rosparam command="load" file="$(find elevation_mapping_demos)/config/postprocessor_pipeline.yaml" />
+      </node>
+    ```
+    A pipeline is a grid_map_filter chain, see grid_map_demos/filters_demo.yaml and [ros / filters](http://wiki.ros.org/filters) for more information. 
+
+* **`postprocessor_num_threads`** (int, default: 1, min: 1)
+
+    The number of threads to use for asynchronous postprocessing. More threads results in higher throughput, at cost of more resource usage. 
+
+
+
 
 ## Changelog
 
