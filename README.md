@@ -284,6 +284,8 @@ This is the main Robot-Centric Elevation Mapping node. It uses the distance sens
     input_sources: []
     ```
 
+    **!!!Note:** Experiment result shows putting `queue_size` to a smaller value (e.g., 10 or 1) can get a more complete robot-centric elevation map.
+
 - **`sensor_processor`** 
 
 	sensor processor parameter provides a set of available operations on the input point clouds based on the sensor model that generate them. 
