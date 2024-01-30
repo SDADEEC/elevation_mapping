@@ -3,6 +3,15 @@
 ## JW Modification
 - More info about parameters to tune
 
+## JW Note
+- If you want to perform some operation on the `grid_map::GridMap` (e.g., saving the grid map to local) subscribed from the elevation map server, you will need to run the following command first before doing any other operation
+  ```C++
+  grid_map::GridMap grid_map_obj;
+  grid_map_obj.convertToDefaultStartIndex();
+  ```
+  This is because the elevation map server internally use `.move()` to update the elevation map and the index is messed up. You need to use `.convertToDefaultStartIndex()` to properly pre-process every incoming map before any operation.
+  
+
 ## Overview
 
 This is a [ROS] package developed for elevation mapping with a mobile robot. The software is designed for (local) navigation tasks with robots which are equipped with a pose estimation (e.g. IMU & odometry) and a distance sensor (e.g. structured light (Kinect, RealSense), laser range sensor, stereo camera). The provided elevation map is limited around the robot and reflects the pose uncertainty that is aggregated through the motion of the robot (robot-centric mapping). This method is developed to explicitly handle drift of the robot pose estimation.
